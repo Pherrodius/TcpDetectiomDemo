@@ -16,13 +16,14 @@ mvn -version
 
 两条命令的 Java 版本都应为 `17`。首次构建时 Maven 会下载依赖，需要能够访问 Maven 仓库。
 
+也可通过IDEA的顶部菜单栏 文件->项目结构 切换JDK版本为17
 ## 启动项目
 
 克隆代码并进入项目目录：
 
 ```bash
 git clone <仓库地址>
-cd demo
+cd TcpDetectionDemo
 ```
 
 先运行测试：
@@ -44,10 +45,8 @@ Tomcat started on port 8080 (http)
 Started DemoApplication
 ```
 
-服务默认监听 `8080` 端口。浏览器打开以下地址可以进一步确认：
-
+服务默认监听 `8080` 端口。浏览器打开以下地址可以确认：
 - Swagger UI：http://localhost:8080/swagger-ui.html
-- OpenAPI JSON：http://localhost:8080/v3/api-docs
 
 按 `Ctrl+C` 停止服务。
 
@@ -57,18 +56,15 @@ Started DemoApplication
 
 启动服务后，可用服务自身监听的 `8080` 端口进行验证。
 
-macOS / Linux：
+使用浏览器直接打开以下地址：  
+http://localhost:8080/tcp/single?path=localhost&startPort=8080&endPort=8080&timeout=1000
 
-```bash
-curl "http://localhost:8080/tcp/single?path=localhost&startPort=8080&endPort=8080&timeout=1000"
-```
-
-Windows PowerShell：
-
-```powershell
-Invoke-RestMethod "http://localhost:8080/tcp/single?path=localhost&startPort=8080&endPort=8080&timeout=1000" | ConvertTo-Json -Depth 10
-```
-
+或在 Swagger UI 中点击 `Try it out` 按钮，
+输入以下参数后点击 `Execute`。  
+--path: localhost  (默认值)  
+--startPort: 8080  
+--endPort: 8080  
+--timeout: 1000  (默认值)  
 预期结果中 `code` 为 `1`，开放端口列表包含 `8080`：
 
 ```json
@@ -83,7 +79,23 @@ Invoke-RestMethod "http://localhost:8080/tcp/single?path=localhost&startPort=808
   "code": 1
 }
 ```
+___
+调整startPort，endPort即可进行同IP的端口批量查询，示例如下：  
+http://localhost:8080/tcp/single?path=localhost&startPort=0&endPort=8080&timeout=1000
 
+以本机结果为例：
+```json
+{
+  "code": 1,
+  "data": {
+    "passablePortCount": 12,
+    "passablePortList": [135, 445, 1042, 3306, 4709, 5040, 6189, 6188, 6850, 7680, 7778, 8080],
+    "path": "localhost",
+    "portRange": "0-8080"
+  },
+  "message": "成功"
+}
+```
 查询参数：
 
 | 参数 | 默认值 | 说明 |
@@ -95,33 +107,21 @@ Invoke-RestMethod "http://localhost:8080/tcp/single?path=localhost&startPort=808
 
 ### 批量检测主机与端口
 
-macOS / Linux：
-
-```bash
-curl -X POST "http://localhost:8080/tcp/multi" \
-  -H "Content-Type: application/json" \
-  -d '{"socketList":[{"path":"localhost","port":8080}],"timeout":1000}'
+在 Swagger UI 中点击 `Try it out` 按钮，
+复制以下 JSON 字符串到请求体后点击 `Execute`。
+```json
+{
+  "socketList": [
+    {
+      "path": "localhost",
+      "port": 8080
+    }
+  ],
+  "timeout": 1000
+}
 ```
-
-Windows PowerShell：
-
-```powershell
-$body = @{
-  socketList = @(
-    @{ path = "localhost"; port = 8080 }
-  )
-  timeout = 1000
-} | ConvertTo-Json -Depth 5
-
-Invoke-RestMethod `
-  -Method Post `
-  -Uri "http://localhost:8080/tcp/multi" `
-  -ContentType "application/json" `
-  -Body $body | ConvertTo-Json -Depth 10
-```
-
 预期结果中 `8080` 的 `passable` 为 `true`：
-
+        
 ```json
 {
   "data": [
@@ -132,14 +132,53 @@ Invoke-RestMethod `
 }
 ```
 
-## 打包运行
+___
 
-```bash
-mvn clean package
-java -jar target/demo-0.0.1-SNAPSHOT.jar
+也可以检测多个外部主机的端口，例如：
+```json
+{
+  "socketList": [
+    {
+      "path": "www.baidu.com",
+      "port": 80
+    },
+    {
+      "path": "www.taobao.com",
+      "port": 80
+    },
+    {
+      "path": "www.jd.com",
+      "port": 9999
+    }
+  ],
+  "timeout": 1000
+}
 ```
+预期结果中 www.baidu.com 与 www.taobao.com 的 80 端口 passable 均为 true，www.jd.com 的 9999 端口 passable 为 false。
 
-打包过程会自动执行测试。启动后的验证方式与上文相同。
+```json
+{
+  "code": 1,
+  "data": [
+    {
+      "passable": true,
+      "path": "www.baidu.com",
+      "port": 80
+    },
+    {
+      "passable": true,
+      "path": "www.taobao.com",
+      "port": 80
+    },
+    {
+      "passable": false,
+      "path": "www.jd.com",
+      "port": 9999
+    }
+  ],
+  "message": "成功"
+}
+```
 
 ## 常见问题
 
