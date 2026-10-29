@@ -9,14 +9,16 @@
 
 先确认 Maven 使用的也是 JDK 17：
 
-```bash
-java -version
-mvn -version
-```
+
+`java -version`
+
+`mvn -version`
+
 
 两条命令的 Java 版本都应为 `17`。首次构建时 Maven 会下载依赖，需要能够访问 Maven 仓库。
 
-也可通过IDEA的顶部菜单栏 文件->项目结构 切换JDK版本为17
+也可在打开项目后通过IDEA的顶部菜单栏 文件->项目结构 切换JDK版本为17
+再次运行`mvn -version`
 ## 启动项目
 
 克隆代码并进入项目目录：
@@ -28,15 +30,12 @@ cd TcpDetectionDemo
 
 先运行测试：
 
-```bash
-mvn clean test
-```
+`mvn clean test`
 
-看到 `BUILD SUCCESS` 后启动服务：
+看到 `BUILD SUCCESS` 后启动服务：  
+若通过IDEA切换JDK版本，该指令可能报错，无需关注，直接运行即可
 
-```bash
-mvn spring-boot:run
-```
+`mvn spring-boot:run`
 
 日志中出现以下内容表示启动成功：
 
@@ -121,7 +120,7 @@ http://localhost:8080/tcp/single?path=localhost&startPort=0&endPort=8080&timeout
 }
 ```
 预期结果中 `8080` 的 `passable` 为 `true`：
-        
+
 ```json
 {
   "data": [
