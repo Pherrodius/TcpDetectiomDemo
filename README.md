@@ -17,8 +17,8 @@
 
 两条命令的 Java 版本都应为 `17`。首次构建时 Maven 会下载依赖，需要能够访问 Maven 仓库。
 
-也可在打开项目后通过IDEA的顶部菜单栏 文件->项目结构 切换JDK版本为17
-再次运行`mvn -version`
+也可在打开项目后通过IDEA的顶部菜单栏 文件->项目结构 切换JDK版本为17 （该方法可能导致部分终端指令报错，但不影响项目启动）
+
 ## 启动项目
 
 克隆代码并进入项目目录：
@@ -33,7 +33,7 @@ cd TcpDetectionDemo
 `mvn clean test`
 
 看到 `BUILD SUCCESS` 后启动服务：  
-若通过IDEA切换JDK版本，该指令可能报错，无需关注，直接运行即可
+若通过IDEA切换JDK版本，该指令可能报错，无需关注，直接启动即可：
 
 `mvn spring-boot:run`
 
